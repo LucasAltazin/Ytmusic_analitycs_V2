@@ -233,3 +233,82 @@ models:
         description: "Spotify track ID used for downstream joins."
       - name: ytm_url
         description: "YouTube Music URL used in dashboards."
+
+    
+  - name: int_kpi_library
+    description: "KPI-ready intermediate model built from int_merged_library (ages, bands, buckets and quality flags)."
+    columns:
+      - name: yt_track_id
+        description: "Primary key of the KPI library model (propagated from int_merged_library)."
+        tests:
+          - unique
+          - not_null
+
+      - name: spotify_track_id
+        description: "Spotify track ID used for downstream joins."
+      - name: title
+        description: "Track title as seen in the library."
+      - name: artist
+        description: "Primary artist for the track."
+      - name: album
+        description: "Album name for the track."
+      - name: main_genre
+        description: "High-level genre category used for analysis."
+      - name: sub_genre
+        description: "Subgenre used for detailed segmentation."
+      - name: genres
+        description: "Raw or concatenated genres coming from Spotify."
+
+      - name: release_year
+        description: "Original release year as a string (raw value propagated from enrichment)."
+      - name: release_year_int
+        description: "Release year casted to integer when possible."
+
+      - name: duration_seconds
+        description: "Track duration in seconds."
+      - name: duration_minutes
+        description: "Track duration in minutes (derived from duration_seconds)."
+      - name: duration_hours
+        description: "Track duration in hours (derived from duration_seconds)."
+
+      - name: popularity
+        description: "Spotify popularity score for the track (0–100)."
+
+      - name: ytm_url
+        description: "YouTube Music URL used in dashboards and links."
+      - name: extraction_date
+        description: "Timestamp when the track metadata was last extracted."
+
+      - name: track_age_years
+        description: "Approximate age of the track in years based on release_year_int."
+      - name: release_decade
+        description: "Decade of release (e.g. 1990, 2000, 2010)."
+
+      - name: popularity_band
+        description: "Bucketed popularity band for segmentation (e.g. 0–19, 20–39, ..., 80–100)."
+        tests:
+          - accepted_values:
+              values:
+                - Unknown
+                - '0-19'
+                - '20-39'
+                - '40-59'
+                - '60-79'
+                - '80-100'
+
+      - name: track_length_bucket
+        description: "Bucketed track length (short / medium / long) based on duration_seconds."
+        tests:
+          - accepted_values:
+              values:
+                - Unknown
+                - 'Short (<2:30)'
+                - 'Medium (2:30–5:00)'
+                - 'Long (>5:00)'
+
+      - name: has_spotify_match
+        description: "Flag indicating if the track has a valid Spotify match (spotify_track_id is not null)."
+      - name: has_genre
+        description: "Flag indicating if the track has a non-null main_genre."
+      - name: has_ytm_url
+        description: "Flag indicating if the track has a non-null YouTube Music URL."
