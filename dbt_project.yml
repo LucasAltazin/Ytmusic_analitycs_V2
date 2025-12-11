@@ -1,4 +1,4 @@
-name: 'ytmusic_analytics'
+name: 'Ytmusic_analytics_V2'
 version: '1.0.0'
 config-version: 2
 
@@ -20,13 +20,13 @@ clean-targets:
 # GLOBAL SETTINGS
 # ================================
 models:
-  ytmusic_analytics:
+  Ytmusic_analytics_V2:
 
     # -----------------------------
     # 1. STAGING LAYER
     # -----------------------------
     staging:
-      +schema: ytmusic_staging     # aujourd’hui dbt_laltazin, change quand le vrai dataset existe
+      +schema: ytmusic_staging
       +materialized: view
       +tags: ['staging']
 
@@ -34,7 +34,7 @@ models:
     # 2. INTERMEDIATE LAYER
     # -----------------------------
     intermediate:
-      +schema: ytmusic_intermediate   # aujourd’hui dbt_laltazin aussi
+      +schema: ytmusic_intermediate
       +materialized: view
       +tags: ['intermediate']
 
@@ -45,6 +45,6 @@ models:
       +schema: ytmusic_mart
       +materialized: table
       +persist_docs:
-          relation: true             # important pour Looker Studio
+          relation: true
           columns: true
       +tags: ['mart']

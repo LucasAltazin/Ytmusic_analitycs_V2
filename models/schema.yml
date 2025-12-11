@@ -246,28 +246,37 @@ models:
 
       - name: spotify_track_id
         description: "Spotify track ID used for downstream joins."
+        
       - name: title
         description: "Track title as seen in the library."
+
       - name: artist
         description: "Primary artist for the track."
+
       - name: album
         description: "Album name for the track."
+
       - name: main_genre
         description: "High-level genre category used for analysis."
+
       - name: sub_genre
         description: "Subgenre used for detailed segmentation."
+
       - name: genres
         description: "Raw or concatenated genres coming from Spotify."
 
       - name: release_year
         description: "Original release year as a string (raw value propagated from enrichment)."
+
       - name: release_year_int
         description: "Release year casted to integer when possible."
 
       - name: duration_seconds
         description: "Track duration in seconds."
+
       - name: duration_minutes
         description: "Track duration in minutes (derived from duration_seconds)."
+
       - name: duration_hours
         description: "Track duration in hours (derived from duration_seconds)."
 
