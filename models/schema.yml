@@ -212,3 +212,24 @@ models:
         description: "Raw Spotify genres."
       - name: extraction_date
         description: "Extraction timestamp."
+
+# ==============================================================
+# INTERMEDIATE MODELS — JOINED & ENRICHED LAYER
+# ==============================================================
+  - name: int_merged_library
+    description: "Intermediate model merging YT library, Spotify metadata and genre lookup."
+    columns:
+      - name: yt_track_id
+        description: "Primary key of the integrated library model (from source_track_id / track_id)."
+        tests:
+          - unique
+          - not_null
+
+      - name: main_genre
+        description: "High-level genre category used for analysis."
+      - name: sub_genre
+        description: "Subgenre used for detailed segmentation."
+      - name: spotify_track_id
+        description: "Spotify track ID used for downstream joins."
+      - name: ytm_url
+        description: "YouTube Music URL used in dashboards."
