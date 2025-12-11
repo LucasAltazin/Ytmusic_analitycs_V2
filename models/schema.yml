@@ -1,8 +1,5 @@
 version: 2
 
-# ============================================================
-#  RAW SOURCES — GENRE LOOKUP
-# ============================================================
 sources:
   - name: raw
     description: "Raw dataset extracted from YouTube Music and Spotify APIs and stored in BigQuery."
@@ -11,14 +8,17 @@ sources:
     loader: bigquery
 
     tables:
+      # ============================================================
+      # GENRE LOOKUP
+      # ============================================================
       - name: genre
         identifier: genre_lookup
         description: "Lookup table mapping Spotify raw genre strings to a main and sub genre classification."
         columns:
           - name: spotify_raw_genre
-            description: "Original Spotify genre string as extracted from the API."
+            description: "Original Spotify genre string."
             tests:
-              - dbt_utils.unique:
+              - unique:
                   config:
                     severity: warn
               - not_null:
@@ -26,23 +26,22 @@ sources:
                     severity: warn
 
           - name: main_genre
-            description: "High-level genre category assigned manually or via classification rules."
+            description: "High-level genre category."
 
           - name: sub_genre
-            description: "Lower-level subgenre related to the main genre for more detailed categorization."
+            description: "Subgenre classification."
 
-
-# ============================================================
-#  RAW SOURCE — YOUTUBE MUSIC LIBRARY
-# ============================================================
-      - name: Yt_library
+      # ============================================================
+      # YOUTUBE MUSIC LIBRARY
+      # ============================================================
+      - name: yt_library
         identifier: raw_library
-        description: "Raw extracted library from YouTube Music, containing saved tracks and metadata at extraction time."
+        description: "Extracted YT Music library (tracks & metadata)."
         columns:
           - name: track_id
-            description: "Unique YouTube Music track identifier. Should be unique per track, but duplicates may occur in raw data."
+            description: "Unique YouTube Music track ID."
             tests:
-              - dbt_utils.unique:
+              - unique:
                   config:
                     severity: warn
               - not_null:
@@ -50,41 +49,40 @@ sources:
                     severity: warn
 
           - name: title
-            description: "Track title exactly as returned by YouTube Music."
+            description: "Track title."
 
           - name: artist
-            description: "Primary artist associated with the track."
+            description: "Artist name."
 
           - name: album
-            description: "Album name of the track."
+            description: "Album name."
 
           - name: duration_seconds
-            description: "Track duration in seconds as provided by the YT Music API."
+            description: "Track duration in seconds."
 
           - name: liked
-            description: "Whether the track is liked by the user (boolean encoded as float)."
+            description: "Track liked flag."
 
           - name: ytm_url
-            description: "Direct YouTube Music URL to the track."
+            description: "Track YouTube Music URL."
 
           - name: source
-            description: "Indicates the extraction source version or process."
+            description: "Extraction source."
 
           - name: extraction_date
-            description: "Timestamp or date string representing when the raw extraction was performed."
+            description: "Extraction timestamp."
 
-
-# ============================================================
-#  RAW SOURCE — SPOTIFY LIBRARY
-# ============================================================
+      # ============================================================
+      # SPOTIFY LIBRARY ENRICHMENT
+      # ============================================================
       - name: spotify_library
         identifier: raw_spotify_library
-        description: "Raw enriched Spotify metadata used to augment the YT Music library with genres, popularity, and IDs."
+        description: "Spotify-enriched metadata."
         columns:
           - name: source_track_id
-            description: "The track_id from the YT Music library used to join with Spotify results."
+            description: "Track ID from YT Music library."
             tests:
-              - dbt_utils.unique:
+              - unique:
                   config:
                     severity: warn
               - not_null:
@@ -92,43 +90,43 @@ sources:
                     severity: warn
 
           - name: title_original
-            description: "Original title returned by the Spotify search API before cleaning."
+            description: "Original Spotify title."
 
           - name: artist_original
-            description: "Original artist string from Spotify search results."
+            description: "Original artist data."
 
           - name: album_original
-            description: "Original album name from Spotify."
+            description: "Original album name."
 
           - name: source
-            description: "Indicates if the record came from a direct search, cached match, or other logic."
+            description: "Origin of record."
 
           - name: spotify_track_id
-            description: "Unique Spotify Track ID, if found during enrichment."
+            description: "Spotify track ID."
 
           - name: spotify_artist_id
-            description: "Spotify Artist ID associated with the track."
+            description: "Spotify artist ID."
 
           - name: spotify_album_id
-            description: "Spotify Album ID associated with the track."
+            description: "Spotify album ID."
 
           - name: release_year
-            description: "Release year extracted from Spotify metadata."
+            description: "Release year."
 
           - name: duration_ms
-            description: "Duration of the track in milliseconds as returned by Spotify."
+            description: "Duration in ms."
 
           - name: duration_seconds
-            description: "Duration converted to seconds for alignment with YT Music."
+            description: "Duration converted to seconds."
 
           - name: popularity
-            description: "Spotify popularity score between 0 and 100."
+            description: "Popularity score."
 
           - name: explicit
-            description: "Boolean indicating whether the track is explicit."
+            description: "Explicit flag."
 
           - name: genres
-            description: "List or concatenated string of Spotify genres for this track (raw field)."
+            description: "Raw Spotify genres."
 
           - name: extraction_date
-            description: "Date when Spotify metadata was extracted."
+            description: "Extraction timestamp."

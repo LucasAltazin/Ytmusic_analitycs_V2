@@ -1,8 +1,21 @@
-with 
+with source as (
 
-source as (
+    select * 
+    from {{ source('raw', 'spotify_library') }}
 
-    select * from {{ source('raw', 'spotify_library') }}
+),
+
+dedup as (
+
+    select
+        *,
+        row_number() over (
+            partition by source_track_id
+            order by 
+                extraction_date desc,   -- garde la plus récente
+                popularity desc         -- puis la plus populaire
+        ) as rn
+    from source
 
 ),
 
@@ -24,9 +37,10 @@ renamed as (
         explicit,
         genres,
         extraction_date
-
-    from source
+    from dedup
+    where rn = 1   -- on garde une seule ligne par source_track_id
 
 )
 
-select * from renamed
+select * 
+from renamed
