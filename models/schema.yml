@@ -130,3 +130,85 @@ sources:
 
           - name: extraction_date
             description: "Extraction timestamp."
+
+
+models:
+  # ==============================================================
+  # STAGING MODELS - RAW LAYER CLEANED
+  # ==============================================================
+
+  - name: stg_raw__genre
+    description: "Staging model for Spotify genre lookup (deduplicated & cleaned)."
+    columns:
+      - name: spotify_raw_genre
+        description: "Original Spotify genre string, 1 row per genre after dedup."
+        tests:
+          - unique
+          - not_null
+      - name: main_genre
+        description: "High-level genre category."
+      - name: sub_genre
+        description: "Subgenre classification."
+
+  - name: stg_raw__yt_library
+    description: "Staging model for YouTube Music library (1 row per track_id, latest extraction)."
+    columns:
+      - name: track_id
+        description: "Primary key of the staging YT library model (deduplicated)."
+        tests:
+          - unique
+          - not_null
+      - name: title
+        description: "Track title."
+      - name: artist
+        description: "Artist name."
+      - name: album
+        description: "Album name."
+      - name: duration_seconds
+        description: "Track duration in seconds."
+      - name: liked
+        description: "Track liked flag."
+      - name: ytm_url
+        description: "Track YouTube Music URL."
+      - name: source
+        description: "Extraction source."
+      - name: extraction_date
+        description: "Extraction timestamp."
+
+  - name: stg_raw__spotify_library
+    description: "Staging model for Spotify metadata enrichment (1 row per source_track_id)."
+    columns:
+      - name: source_track_id
+        description: "Primary key of the staging Spotify library model (deduplicated)."
+        tests:
+          - unique
+          - not_null
+
+      - name: title_original
+        description: "Original Spotify title."
+      - name: artist_original
+        description: "Original artist data."
+      - name: album_original
+        description: "Original album name."
+      - name: source
+        description: "Origin of record."
+      - name: spotify_track_id
+        description: "Spotify track ID."
+      - name: spotify_artist_id
+        description: "Spotify artist ID."
+      - name: spotify_album_id
+        description: "Spotify album ID."
+      - name: release_year
+        description: "Release year."
+      - name: duration_ms
+        description: "Duration in ms."
+      - name: duration_seconds
+        description: "Duration converted to seconds."
+      - name: popularity
+        description: "Popularity score."
+      - name: explicit
+        description: "Explicit flag."
+      - name: genres
+        description: "Raw Spotify genres."
+      - name: extraction_date
+        description: "Extraction timestamp."
