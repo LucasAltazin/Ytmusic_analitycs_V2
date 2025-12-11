@@ -35,7 +35,7 @@ renamed as (
         duration_seconds,
         popularity,
         explicit,
-        genres,
+        trim(split(genres, ',')[SAFE_OFFSET(0)]) as genres,
         extraction_date
     from dedup
     where rn = 1   -- on garde une seule ligne par source_track_id
