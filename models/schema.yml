@@ -1,0 +1,377 @@
+version: 2
+
+sources:
+  - name: raw
+    description: "Raw dataset extracted from YouTube Music and Spotify APIs and stored in BigQuery."
+    database: ytmusic-analytics-478417
+    schema: ytmusic_raw
+    loader: bigquery
+
+    tables:
+      # ============================================================
+      # GENRE LOOKUP
+      # ============================================================
+      - name: genre
+        identifier: genre_lookup
+        description: "Lookup table mapping Spotify raw genre strings to a main and sub genre classification."
+        columns:
+          - name: spotify_raw_genre
+            description: "Original Spotify genre string."
+            tests:
+              - unique:
+                  config:
+                    severity: warn
+              - not_null:
+                  config:
+                    severity: warn
+
+          - name: main_genre
+            description: "High-level genre category."
+
+          - name: sub_genre
+            description: "Subgenre classification."
+
+      # ============================================================
+      # YOUTUBE MUSIC LIBRARY
+      # ============================================================
+      - name: yt_library
+        identifier: raw_library
+        description: "Extracted YT Music library (tracks & metadata)."
+        columns:
+          - name: track_id
+            description: "Unique YouTube Music track ID."
+            tests:
+              - unique:
+                  config:
+                    severity: warn
+              - not_null:
+                  config:
+                    severity: warn
+
+          - name: title
+            description: "Track title."
+
+          - name: artist
+            description: "Artist name."
+
+          - name: album
+            description: "Album name."
+
+          - name: duration_seconds
+            description: "Track duration in seconds."
+
+          - name: liked
+            description: "Track liked flag."
+
+          - name: ytm_url
+            description: "Track YouTube Music URL."
+
+          - name: source
+            description: "Extraction source."
+
+          - name: extraction_date
+            description: "Extraction timestamp."
+
+      # ============================================================
+      # SPOTIFY LIBRARY ENRICHMENT
+      # ============================================================
+      - name: spotify_library
+        identifier: raw_spotify_library
+        description: "Spotify-enriched metadata."
+        columns:
+          - name: source_track_id
+            description: "Track ID from YT Music library."
+            tests:
+              - unique:
+                  config:
+                    severity: warn
+              - not_null:
+                  config:
+                    severity: warn
+
+          - name: title_original
+            description: "Original Spotify title."
+
+          - name: artist_original
+            description: "Original artist data."
+
+          - name: album_original
+            description: "Original album name."
+
+          - name: source
+            description: "Origin of record."
+
+          - name: spotify_track_id
+            description: "Spotify track ID."
+
+          - name: spotify_artist_id
+            description: "Spotify artist ID."
+
+          - name: spotify_album_id
+            description: "Spotify album ID."
+
+          - name: release_year
+            description: "Release year."
+
+          - name: duration_ms
+            description: "Duration in ms."
+
+          - name: duration_seconds
+            description: "Duration converted to seconds."
+
+          - name: popularity
+            description: "Popularity score."
+
+          - name: explicit
+            description: "Explicit flag."
+
+          - name: genres
+            description: "Raw Spotify genres."
+
+          - name: extraction_date
+            description: "Extraction timestamp."
+
+
+models:
+  # ==============================================================
+  # STAGING MODELS - RAW LAYER CLEANED
+  # ==============================================================
+
+  - name: stg_raw__genre
+    description: "Staging model for Spotify genre lookup (deduplicated & cleaned)."
+    columns:
+      - name: spotify_raw_genre
+        description: "Original Spotify genre string, 1 row per genre after dedup."
+        tests:
+          - unique
+          - not_null
+      - name: main_genre
+        description: "High-level genre category."
+      - name: sub_genre
+        description: "Subgenre classification."
+
+  - name: stg_raw__yt_library
+    description: "Staging model for YouTube Music library (1 row per track_id, latest extraction)."
+    columns:
+      - name: track_id
+        description: "Primary key of the staging YT library model (deduplicated)."
+        tests:
+          - unique
+          - not_null
+      - name: title
+        description: "Track title."
+      - name: artist
+        description: "Artist name."
+      - name: album
+        description: "Album name."
+      - name: duration_seconds
+        description: "Track duration in seconds."
+      - name: liked
+        description: "Track liked flag."
+      - name: ytm_url
+        description: "Track YouTube Music URL."
+      - name: source
+        description: "Extraction source."
+      - name: extraction_date
+        description: "Extraction timestamp."
+
+  - name: stg_raw__spotify_library
+    description: "Staging model for Spotify metadata enrichment (1 row per source_track_id)."
+    columns:
+      - name: source_track_id
+        description: "Primary key of the staging Spotify library model (deduplicated)."
+        tests:
+          - unique
+          - not_null
+
+      - name: title_original
+        description: "Original Spotify title."
+      - name: artist_original
+        description: "Original artist data."
+      - name: album_original
+        description: "Original album name."
+      - name: source
+        description: "Origin of record."
+      - name: spotify_track_id
+        description: "Spotify track ID."
+      - name: spotify_artist_id
+        description: "Spotify artist ID."
+      - name: spotify_album_id
+        description: "Spotify album ID."
+      - name: release_year
+        description: "Release year."
+      - name: duration_ms
+        description: "Duration in ms."
+      - name: duration_seconds
+        description: "Duration converted to seconds."
+      - name: popularity
+        description: "Popularity score."
+      - name: explicit
+        description: "Explicit flag."
+      - name: genres
+        description: "Raw Spotify genres."
+      - name: extraction_date
+        description: "Extraction timestamp."
+
+# ==============================================================
+# INTERMEDIATE MODELS — JOINED & ENRICHED LAYER
+# ==============================================================
+  - name: int_merged_library
+    description: "Intermediate model merging YT library, Spotify metadata and genre lookup."
+    columns:
+      - name: yt_track_id
+        description: "Primary key of the integrated library model (from source_track_id / track_id)."
+        tests:
+          - unique
+          - not_null
+
+      - name: main_genre
+        description: "High-level genre category used for analysis."
+      - name: sub_genre
+        description: "Subgenre used for detailed segmentation."
+      - name: spotify_track_id
+        description: "Spotify track ID used for downstream joins."
+      - name: ytm_url
+        description: "YouTube Music URL used in dashboards."
+
+    
+  - name: int_kpi_library
+    description: "KPI-ready intermediate model built from int_merged_library (ages, bands, buckets and quality flags)."
+    columns:
+      - name: yt_track_id
+        description: "Primary key of the KPI library model (propagated from int_merged_library)."
+        tests:
+          - unique
+          - not_null
+
+      - name: spotify_track_id
+        description: "Spotify track ID used for downstream joins."
+        
+      - name: title
+        description: "Track title as seen in the library."
+
+      - name: artist
+        description: "Primary artist for the track."
+
+      - name: album
+        description: "Album name for the track."
+
+      - name: main_genre
+        description: "High-level genre category used for analysis."
+
+      - name: sub_genre
+        description: "Subgenre used for detailed segmentation."
+
+      - name: genres
+        description: "Raw or concatenated genres coming from Spotify."
+
+      - name: release_year
+        description: "Original release year as a string (raw value propagated from enrichment)."
+
+      - name: release_year_int
+        description: "Release year casted to integer when possible."
+
+      - name: duration_seconds
+        description: "Track duration in seconds."
+
+      - name: duration_minutes
+        description: "Track duration in minutes (derived from duration_seconds)."
+
+      - name: duration_hours
+        description: "Track duration in hours (derived from duration_seconds)."
+
+      - name: popularity
+        description: "Spotify popularity score for the track (0–100)."
+
+      - name: ytm_url
+        description: "YouTube Music URL used in dashboards and links."
+      - name: extraction_date
+        description: "Timestamp when the track metadata was last extracted."
+
+      - name: track_age_years
+        description: "Approximate age of the track in years based on release_year_int."
+      - name: release_decade
+        description: "Decade of release (e.g. 1990, 2000, 2010)."
+
+      - name: popularity_band
+        description: "Bucketed popularity band for segmentation (e.g. 0–19, 20–39, ..., 80–100)."
+        tests:
+          - accepted_values:
+              values:
+                - Unknown
+                - '0-19'
+                - '20-39'
+                - '40-59'
+                - '60-79'
+                - '80-100'
+
+      - name: track_length_bucket
+        description: "Bucketed track length (short / medium / long) based on duration_seconds."
+        tests:
+          - accepted_values:
+              values:
+                - Unknown
+                - 'Short (<2:30)'
+                - 'Medium (2:30–5:00)'
+                - 'Long (>5:00)'
+
+      - name: has_spotify_match
+        description: "Flag indicating if the track has a valid Spotify match (spotify_track_id is not null)."
+      - name: has_genre
+        description: "Flag indicating if the track has a non-null main_genre."
+      - name: has_ytm_url
+        description: "Flag indicating if the track has a non-null YouTube Music URL."
+
+# ==============================================================
+# MART MODELS — FINAL BUSINESS LAYER
+# ==============================================================
+  - name: mart_kpi_library
+    description: "Final mart aggregating KPIs for each track in the user's YouTube Music + Spotify library."
+    columns:
+      - name: yt_track_id
+        description: "Unique identifier of the track from YT Music."
+        tests:
+          - unique
+          - not_null
+
+      - name: spotify_track_id
+        description: "Mapped Spotify ID for enrichment."
+
+      - name: title
+        description: "Track title."
+
+      - name: artist
+        description: "Primary artist."
+
+      - name: album
+        description: "Album title."
+
+      - name: main_genre
+        description: "High-level genre (from lookup table)."
+
+      - name: sub_genre
+        description: "More detailed genre classification."
+
+      - name: genres
+        description: "Raw multi-genre string from Spotify (comma-separated)."
+
+      - name: popularity
+        description: "Spotify popularity score (0–100)."
+
+      - name: duration_seconds
+        description: "Track duration in seconds."
+
+      - name: release_year
+        description: "Original release year from metadata."
+
+      - name: release_year_int
+        description: "Release year casted into integer for numeric analysis."
+
+      - name: track_age_years
+        description: "Computed age of the track in years."
+
+      - name: ytm_url
+        description: "Original YouTube Music URL for playback."
+
+      - name: extraction_date
+        description: "Date when the consolidated record was extracted."
