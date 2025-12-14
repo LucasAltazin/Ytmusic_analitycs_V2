@@ -1,5 +1,29 @@
-# you shouldn't commit these into source control
-# these are the default directory names, adjust/add to fit your needs
-target/
-dbt_packages/
-logs/
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pkl
+
+# Virtual env
+venv/
+.env
+
+# VSCode
+.vscode/
+
+# Secrets (credentials ONLY)
+secrets/
+!src/config/*.json      # KEEP configuration JSON files
+
+# Data (DO NOT VERSION RAW OR INTERMEDIATE FILES)
+data/raw/
+data/interim/
+data/processed/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
