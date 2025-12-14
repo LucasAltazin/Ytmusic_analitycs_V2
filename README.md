@@ -1,192 +1,231 @@
-# 🎵 YTMusic Analytics  
-A full-stack data platform built from **Google Takeout**, **Spotify API**, **BigQuery**, **dbt**, **n8n**, and **Looker Studio**.
+# 🎵 YT Music Analytics
 
-This project reconstructs and enriches my entire **YouTube Music Library** and **Listening History** into a complete analytics ecosystem with automated ETL pipelines and dashboards.
+Production-oriented analytics project demonstrating how to design, build, and operate a modern data pipeline around personal but realistic music data sources.
 
----
+This project showcases **end-to-end analytics engineering skills** across ingestion, enrichment, modeling, and analytics delivery, with a clear separation of responsibilities:
 
-# 🚀 Project Overview
+- **Python** for extraction, normalization, enrichment, and data quality  
+- **BigQuery** as the analytical cloud data warehouse  
+- **dbt** for analytics engineering and semantic modeling  
 
-This repository contains **three data products**, each structured as a set of Epics and deliverables.
-
-### **Product A — YT Music Library (src/library/)**
-Extract, clean, enrich and analyse my full saved library from **Google Takeout**.
-
-Core features:
-- Extract music library + playlists  
-- Standardize metadata (track, artist, album)  
-- Enrich via Spotify (genres, duration, popularity…)  
-- Build dbt models (stg → int → mart)  
-- Publish Library dashboard in Looker Studio  
-
-### **Product B — Listening History (src/history/)**
-Parse my full **YouTube + YouTube Music** watch history.
-
-Core features:
-- Extract and normalize watch-history.json  
-- Detect music vs non-music  
-- Join with Spotify enrichment  
-- Build `fact_listening` mart  
-- Dashboard: Listening patterns, top tracks, session metrics  
-
-### **Product C — ETL Automation (src/automation/)**
-Orchestrate all ETL with **n8n**, **dbt Cloud** and automated monitoring.
-
-Core features:
-- Automated monthly Library refresh  
-- Bi-weekly History ingestion  
-- CI + testing pipeline  
-- Monitoring dashboard  
+The focus is **not the dataset itself**, but the **architecture, data quality, and analytical rigor** behind the pipeline.
 
 ---
 
-# 🗂 Project Structure
+## 🚀 Project Overview
+
+The goal of this project is to transform raw **YouTube Music Google Takeout** data into a structured analytics platform, enriched with **Spotify metadata** and exposed through **analytics-ready marts**.
+
+The repository combines:
+
+- Python ingestion & enrichment pipelines  
+- BigQuery as a scalable data warehouse  
+- dbt for layered analytics modeling  
+- Production-oriented project structure and naming conventions  
+
+This repository is designed as a **data product**, not a collection of scripts.
+
+---
+
+## 🧠 Architecture & Design Philosophy
+
+YouTube Music (Google Takeout)
+↓
+Python extraction & enrichment
+↓
+BigQuery (raw / enriched tables)
+↓
+dbt (staging → intermediate → mart)
+↓
+Analytics-ready datasets
+
+yaml
+Copier le code
+
+### Core principles
+
+- Clear boundary between **data engineering** and **analytics engineering**
+- Explicit, step-based pipelines
+- Analytics models designed for **direct BI consumption**
+
+---
+
+## 📁 Repository Structure
+
 ytmusic-analytics/
-├─ dashboards/ # Looker Studio captures & documentation
-├─ data/
-│ ├─ raw/
-│ │ ├─ takeout/
-│ │ │ ├─ youtube_music/
-│ │ │ │ ├─ history/ # watch-history.json, search-history.json
-│ │ │ │ ├─ music_library/ # music library songs.csv
-│ │ │ │ └─ playlists/ # playlist-videos.csv files
-│ │ │ └─ samples/ # sample files for dev
-│ │ └─ ytmusic/ # (legacy) raw ytmusicapi extractions
-│ ├─ interim/ # ETL staging outputs
-│ └─ processed/ # aggregated outputs (history_clean, dq logs…)
+├── src/ # Python ingestion & enrichment
+│ ├── library/ # YouTube Music Library pipelines
+│ ├── history/ # Listening history pipelines
+│ └── config/ # Centralized configuration
 │
-├─ dbt/ # dbt models, tests, documentation
+├── models/ # dbt analytics models
+│ ├── staging/
+│ ├── intermediate/
+│ └── mart/
 │
-├─ orchestration/ # n8n workflows, shell jobs, CI triggers
+├── macros/
+├── tests/
+├── seeds/
 │
-├─ secrets/ (gitignored) # credentials: GCP SA, Spotify, OAuth
-│
-├─ src/
-│ ├─ config/ # whitelist, constants, params
-│ ├─ library/ # Product A – Library
-│ │ ├─ a1_extract_load/ # Epic A1: Takeout → BigQuery
-│ │ ├─ a2_spotify_enrich/ # Epic A2: Spotify enrichment
-│ │ ├─ a3_dbt/ # Epic A3: dbt models
-│ │ └─ a4_dashboard/ # Epic A4: Library dashboard prep
-│ │
-│ ├─ history/ # Product B – Listening History
-│ │ ├─ b1_extract_load/ # Epic B1: Parse takeout history → BQ
-│ │ ├─ b2_spotify_enrich/ # Epic B2: Spotify enrichment
-│ │ ├─ b3_dbt/ # Epic B3: dbt history models
-│ │ └─ b4_dashboard/ # Epic B4: listening dashboard
-│ │
-│ └─ automation/ # Product C – ETL Automation
-│ ├─ c1_n8n/
-│ ├─ c2_dbt_automation/
-│ └─ c3_monitoring/
-│
-├─ .gitignore
-├─ README.md
-└─ setup_structure.py # bootstrap the folder structure
+├── dbt_project.yml
+├── packages.yml
+└── README.md
 
+markdown
+Copier le code
 
 ---
 
-# 🏗 ETL Pipeline — Product A
+## 🎧 Product A — YouTube Music Library
 
-### **A1 — Extract & Load (Google Takeout → BigQuery)**  
-✔ Extract library + whitelisted playlists  
-✔ Deduplicate  
-✔ Merge playlists metadata from library  
-✔ Load into BigQuery table `raw_library`  
-✔ Perform data quality checks (missing artists, missing albums…)  
+**Status:** Python ingestion complete · dbt models implemented
 
-Scripts used:
-- `src/library/a1_extract_load/extract_library_takeout.py`
-- `src/library/a1_extract_load/load_library_bq.py`
-- `src/library/a1_extract_load/dq_check_library.py`
+This product focuses on the extraction and enrichment of a saved **YouTube Music library** (tracks, artists, albums).
 
-BigQuery tables:
-ytmusic_raw.raw_library
+### Responsibility split
 
----
+#### Python — Ingestion & Enrichment
 
-# 🎧 Product B — Listening History
+Located in:
 
-Pipeline:
-1. Parse detailed Watch History Takeout  
-2. Normalize timestamps  
-3. Detect “music” events  
-4. Join with Spotify metadata  
-5. Build `fact_listening` via dbt  
+- `src/library/a1_extract_load/`
+- `src/library/a2_spotify_enrich/`
 
----
+Main responsibilities:
 
-# 🤖 Product C — ETL Automation
+- Parse Google Takeout exports  
+- Normalize raw metadata (track, artist, album)  
+- Generate stable identifiers and YouTube Music URLs  
+- Enrich tracks with Spotify metadata  
+- Run data-quality checks before loading  
 
-Automations handled by:
-- **n8n workflows** (monthly library refresh, bi-weekly history refresh)
-- **dbt Cloud jobs** triggered by API
-- **logging / alerting** in BigQuery + Looker
+Key scripts:
 
----
+- `extract_library_takeout.py`
+- `load_library_bq.py`
+- `enrich_spotify_library.py`
+- `dq_check_library.py`
+- `dq_check_spotify_enriched_library.py`
 
-# 🛠 Installation & Usage
+#### dbt — Analytics Modeling
 
-### **Create virtual environment**
-python -m venv venv
-.\venv\Scripts\Activate.ps1 # Windows
+Located in:
 
-### **Install dependencies**
-pip install -r requirements.txt
+models/
+├── staging/raw/
+├── intermediate/
+└── mart/
 
+markdown
+Copier le code
 
-### **Run extraction (Library + Playlists)**
-python src/library/a1_extract_load/extract_library_takeout.py
-
-### **Run Data Quality checks**
-python src/library/a1_extract_load/dq_check_library.py
-
+- `stg_*` → cleaned and standardized sources  
+- `int_*` → enriched joins and derived metrics  
+- `mart_*` → analytics-ready KPI tables  
 
 ---
 
-# 📊 Dashboards
+## 🎧 Product B — Listening History
 
-Looker Studio dashboards (screenshots coming soon):
-- Library Overview  
-- Playlist Explorer  
-- Listening History Trends  
-- Artist/Genre explorer  
+**Status:** Python ingestion complete · dbt models in progress
+
+This product processes **YouTube & YouTube Music watch history** to reconstruct listening behavior.
+
+### Responsibility split
+
+#### Python — Ingestion & Enrichment
+
+Located in:
+
+- `src/history/b1_extract_load/`
+- `src/history/b2_spotify_enrich/`
+
+Main responsibilities:
+
+- Parse watch-history Takeout JSON  
+- Normalize timestamps and sessions  
+- Filter music vs non-music events  
+- Enrich tracks with Spotify metadata  
+- Apply data-quality checks  
+
+Key scripts:
+
+- `extract_watch_history.py`
+- `load_history_bq.py`
+- `enrich_spotify_history.py`
+- `dq_check_watch_history_youtube_music.py`
+
+#### dbt — Analytics Modeling (ongoing)
+
+Planned models:
+
+- Listening fact tables  
+- Aggregations by artist, genre, and time  
+- Consumption-ready KPIs  
 
 ---
 
-# 📚 Jira Epics Mapping
+## 🧱 Analytics Modeling (dbt)
 
-| Epic | Description |
-|------|-------------|
-| **A1** | Extract & Load Library (Takeout → BQ) |
-| **A2** | Spotify Enrichment (Genres & Metadata) |
-| **A3** | dbt Models (Library) |
-| **A4** | Library Dashboard |
-| **B1-B4** | Listening History Product |
-| **C1-C3** | Pipeline Automation & Monitoring |
+The dbt project follows a classic layered approach:
 
----
+models/
+├── staging/ # Light cleaning, renaming, casting
+├── intermediate/ # Business logic & joins
+└── mart/ # Analytics-ready tables
 
-# 📌 Roadmap (Next Steps)
+yaml
+Copier le code
 
-- [ ] Spotify enrichment (A2)  
-- [ ] Build dbt staging models  
-- [ ] Generate enriched mart tables  
-- [ ] Build Library dashboard MVP  
-- [ ] Automate ETL via n8n  
-- [ ] Monitoring dashboard  
+Tests and documentation are centralized in:
+
+- `models/schema.yml`
 
 ---
 
-# 👤 Author  
+## 📊 Analytics Outputs
+
+Final marts are designed to expose:
+
+- Track popularity & duration  
+- Release year and track age  
+- Genre classification (main / sub)  
+- Library-level and listening KPIs  
+
+These tables are built to be consumed directly by:
+
+- BI tools (Looker Studio, Power BI)  
+- Ad-hoc SQL analysis  
+
+---
+
+## 🛠 Tooling & Stack
+
+- Python 3.11  
+- Google BigQuery  
+- dbt (BigQuery adapter)  
+- Spotify Web API  
+- Google Takeout  
+- SQL (analytics engineering)  
+
+---
+
+## 🗺 Roadmap (Realistic)
+
+This roadmap reflects incremental, production-oriented steps:
+
+- Incremental models for listening history  
+- Snapshotting for slowly changing attributes  
+- Pipeline orchestration & automation  
+- BI dashboards on top of analytics marts  
+
+---
+
+## 👤 Author
+
 **Lucas Altazin**  
-Product Owner & Data Analyst  
+Product Owner · Data Analyst  
 Brussels, Belgium  
 
-📧 Contact available on demand  
-🐙 GitHub: [LucasAltazin](https://github.com/LucasAltazin)
-
----
-
+GitHub: https://github.com/LucasAltazin
 
