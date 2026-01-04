@@ -131,6 +131,49 @@ sources:
           - name: extraction_date
             description: "Extraction timestamp."
 
+      # ============================================================
+      # YOUTUBE MUSIC HISTORY
+      # ============================================================
+      - name: yt_history
+        identifier: raw_watch_history_youtube_music
+        description: "Extracted YT Music history (tracks & metadata)."
+        columns:
+          - name: track_id
+            description: "Unique YouTube Music track ID."
+            tests:
+              - unique:
+                  config:
+                    severity: warn
+              - not_null:
+                  config:
+                    severity: warn
+
+          - name: title
+            description: "Track title."
+
+          - name: artist
+            description: "Artist name."
+
+          - name: album
+            description: "Album name."
+
+          - name: duration_seconds
+            description: "Track duration in seconds."
+
+          - name: liked
+            description: "Track liked flag."
+
+          - name: ytm_url
+            description: "Track YouTube Music URL."
+
+          - name: source
+            description: "Extraction source."
+            
+          - name: played_at
+            description: " Extraction played_at timestamp"
+
+          - name: extraction_date
+            description: "Extraction timestamp."
 
 models:
   # ==============================================================
