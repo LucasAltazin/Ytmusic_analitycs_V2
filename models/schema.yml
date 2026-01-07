@@ -175,6 +175,65 @@ sources:
           - name: extraction_date
             description: "Extraction timestamp."
 
+      # ============================================================
+      # SPOTIFY HISTORY ENRICHMENT
+      # ============================================================
+      - name: spotify_history
+        identifier: raw_spotify_history
+        description: "Spotify-enriched metadata (for listening history)."
+        columns:
+          - name: source_track_id
+            description: "Track ID from YT Music library."
+            tests:
+              - unique:
+                  config:
+                    severity: warn
+              - not_null:
+                  config:
+                    severity: warn
+
+          - name: title_original
+            description: "Original Spotify title."
+
+          - name: artist_original
+            description: "Original artist data."
+
+          - name: album_original
+            description: "Original album name."
+
+          - name: source
+            description: "Origin of record."
+
+          - name: spotify_track_id
+            description: "Spotify track ID."
+
+          - name: spotify_artist_id
+            description: "Spotify artist ID."
+
+          - name: spotify_album_id
+            description: "Spotify album ID."
+
+          - name: release_year
+            description: "Release year."
+
+          - name: duration_ms
+            description: "Duration in ms."
+
+          - name: duration_seconds
+            description: "Duration converted to seconds."
+
+          - name: popularity
+            description: "Popularity score."
+
+          - name: explicit
+            description: "Explicit flag."
+
+          - name: genres
+            description: "Raw Spotify genres."
+
+          - name: extraction_date
+            description: "Extraction timestamp."
+
 models:
   # ==============================================================
   # STAGING MODELS - RAW LAYER CLEANED
