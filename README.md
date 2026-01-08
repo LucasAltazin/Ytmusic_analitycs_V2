@@ -71,9 +71,6 @@ ytmusic-analytics/
 ├── packages.yml
 └── README.md
 
-markdown
-Copier le code
-
 ---
 
 ## 🎧 Product A — YouTube Music Library
