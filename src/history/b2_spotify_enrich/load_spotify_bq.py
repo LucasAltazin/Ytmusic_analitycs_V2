@@ -26,6 +26,7 @@ def load_spotify_enrichment():
         autodetect=False,
         schema=[
             bigquery.SchemaField("source_track_id", "STRING"),
+            bigquery.SchemaField("source_played_at", "STRING"),
             bigquery.SchemaField("title_original", "STRING"),
             bigquery.SchemaField("artist_original", "STRING"),
             bigquery.SchemaField("album_original", "STRING"),
