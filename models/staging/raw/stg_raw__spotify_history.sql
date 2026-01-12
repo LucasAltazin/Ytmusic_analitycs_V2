@@ -13,7 +13,7 @@ renamed as (
         title_original,
         artist_original,
         album_original,
-        source,
+        source.source AS source,
         spotify_track_id,
         spotify_artist_id,
         spotify_album_id,
@@ -22,7 +22,7 @@ renamed as (
         duration_seconds,
         popularity,
         explicit,
-        genres,
+        trim(split(genres, ',')[SAFE_OFFSET(0)]) as genres,
         extraction_date
 
     from source

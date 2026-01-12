@@ -16,12 +16,12 @@ renamed as (
         duration_seconds,
         liked,
         ytm_url,
-        source,
+        source.source AS source,
         played_at,
         extraction_date
 
-    from source
+    from source 
 
 )
 
-select * from renamed
+select * from renamed 
