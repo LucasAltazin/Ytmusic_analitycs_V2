@@ -91,6 +91,7 @@ def enrich_library_with_spotify():
         # ---------- BUILD FINAL ROW ----------
         enriched_row = {
             "source_track_id": row.track_id,
+            "source_played_at": row.played_at,
             "title_original": row.title,
             "artist_original": row.artist,
             "album_original": row.album,
