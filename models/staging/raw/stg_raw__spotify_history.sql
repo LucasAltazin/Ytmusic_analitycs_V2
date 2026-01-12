@@ -9,7 +9,9 @@ source as (
 renamed as (
 
     select
+        concat(source_track_id, '_', cast(source_played_at as string)) as listening_id,
         source_track_id,
+        source_played_at,
         title_original,
         artist_original,
         album_original,
