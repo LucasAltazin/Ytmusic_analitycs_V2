@@ -1,7 +1,9 @@
 with spotify as (
 
     select
+        listening_id,
         source_track_id,
+        source_played_at,
         spotify_track_id,
         title_original,
         artist_original,
@@ -20,7 +22,7 @@ with spotify as (
 yt as (
 
     select
-        track_id,
+        listening_id,
         played_at,
         ytm_url
     from {{ ref('stg_raw__yt_history') }}
@@ -41,6 +43,7 @@ joined as (
 
     select
         -- listening event grain
+        s.listening_id,
         s.source_track_id AS yt_track_id,
         y.played_at,
 
@@ -63,7 +66,7 @@ joined as (
 
     from spotify s
     left join yt y
-        on y.track_id = s.source_track_id
+        on y.listening_id = s.listening_id
     left join genre g
         on g.spotify_raw_genre = s.genres
 )
