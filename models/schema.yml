@@ -401,11 +401,11 @@ models:
           - accepted_values:
               values:
                 - Unknown
-                - '0-19'
-                - '20-39'
-                - '40-59'
-                - '60-79'
-                - '80-100'
+                - 'Very low popularity 0-19'
+                - 'Low popularity 20-39' 
+                - 'Medium popularity 40-59'
+                - 'High popularity 60-79'
+                - 'Very high popularity 80-100'
 
       - name: track_length_bucket
         description: "Bucketed track length (short / medium / long) based on duration_seconds."
@@ -477,3 +477,29 @@ models:
 
       - name: extraction_date
         description: "Date when the consolidated record was extracted."
+
+      - name: release_decade
+        description: "Decade when the song is released"
+      
+      - name: popularity_band
+        description : "Band of popularity ex : Very low popularity 0-19"
+      
+      - name: duration_minutes
+        description : "Track duration in minutes"
+      
+      - name: duration_hours
+        description : "Track duration in hours"
+      
+      - name: track_length_bucket
+        description : "Bucket of the lenght of the track ex (Medium 2:30-5:00)"
+
+      - name: has_spotify_match
+        description : "Bool answer to match spotify"
+
+      - name: has_genre
+        description : "Bool answer to match genre"
+        
+      - name: has_ytm_url
+        description : "Bool answer to match ytm_url"
+
+        

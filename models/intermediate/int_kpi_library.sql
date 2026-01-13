@@ -46,11 +46,11 @@ kpi as (
         -- Bandes de popularité
         case
             when popularity is null      then 'Unknown'
-            when popularity < 20         then '0-19'
-            when popularity < 40         then '20-39'
-            when popularity < 60         then '40-59'
-            when popularity < 80         then '60-79'
-            else                              '80-100'
+            when popularity < 20         then 'Very low popularity 0-19'
+            when popularity < 40         then 'Low popularity 20-39'
+            when popularity < 60         then 'Medium popularity 40-59'
+            when popularity < 80         then 'High popularity 60-79'
+            else                              'Very high popularity 80-100'
         end as popularity_band,
 
         -- Durées dérivées
