@@ -1,0 +1,168 @@
+import matplotlib.pyplot as plt
+import textwrap
+
+# -----------------------------
+# 1) DATA — TABLEAU 2 (LISTENING HISTORY)
+# -----------------------------
+columns = [
+    "KPI / Metric",
+    "Short description",
+    "Listening Overview",
+    "Trends",
+    "Time Patterns",
+    "Deep Dive",
+    "Priority",
+    "Notes",
+]
+
+rows = [
+    ["Total listens", "Total number of listening events", "✔", "✘", "✘", "✘", "P1", "Core usage metric"],
+    ["Active days", "Days with at least one listen", "✔", "✘", "✘", "✘", "P2", "Engagement proxy"],
+    ["Unique tracks listened", "Distinct tracks played", "✔", "✘", "✘", "✘", "P1", "Discovery vs repetition"],
+    ["Top tracks by listens", "Most replayed tracks", "✔", "✘", "✘", "✘", "P1", "Personal favorites"],
+    #["Top artists by listens", "Most listened artists", "✔", "✘", "✘", "✘", "P1", "Taste profile"],
+    ["Genre share by listens", "% listens per main_genre", "✔", "✘", "✘", "✘", "P2", "Consumption-based genres"],
+    ["Total listening time", "Sum of listening duration", "✔", "✘", "✘", "✘", "P1", "Requires duration quality"],
+    ["Avg listens per day", "Average listening frequency", "✔", "✘", "✘", "✘", "P1", "Normalisation"],
+
+    #["Listens over time (Daily/Weekly)", "Listening evolution over time", "✘", "✔", "✘", "✘", "P1", "Core trend"],
+    ["Rolling average", "Smoothed listening trend", "✘", "✔", "✘", "✘", "P1–P2", "Readability"],
+    ["Seasonality (month)", "Listening by month", "✘", "✔", "✘", "✘", "P2", "Pattern detection"],
+    ["Seasonality (weekday)", "Listening by weekday", "✘", "✔", "✘", "✘", "P2", "Habit insight"],
+    ["Growth / decline trend", "Direction over time", "✘", "✔", "✘", "✘", "Later", "Needs interpretation"],
+
+    #["Hour × weekday heatmap", "Listening intensity matrix", "✘", "✘", "✔", "✘", "P1", "Strong visual insight"],
+    ["Peak listening hour", "Hour with most listens", "✘", "✘", "✔", "✘", "P1", "Simple summary"],
+    ["Peak listening day", "Most active weekday", "✘", "✘", "✔", "✘", "P1", "Habit signal"],
+    ["Off-peak listening share", "% listens outside peak hours", "✘", "✘", "✔", "✘", "P2", "Behavior nuance"],
+
+    #["Track listening timeline", "Plays over time for a track", "✘", "✘", "✘", "✔", "P1", "Drill-down"],
+    #["Artist listening trend", "Artist listens over time", "✘", "✘", "✘", "✔", "P1", "Evolution of taste"],
+    ["Top periods per track", "Peak listening periods", "✘", "✘", "✘", "✔", "P2", "Narrative"],
+    ["Associated genres", "Genres linked to listens", "✘", "✘", "✘", "✔", "P2", "Context"],
+]
+
+# -----------------------------
+# Text wrapping helper
+# -----------------------------
+def wrap(s, width):
+    return "\n".join(textwrap.wrap(str(s), width=width, break_long_words=False))
+
+# Wrap only the text-heavy columns for readability
+wrapped_rows = [
+    [
+        wrap(r[0], 26),  # KPI / Metric
+        wrap(r[1], 32),  # Short description
+        r[2],            # ✔/✘
+        r[3],            # ✔/✘
+        r[4],            # ✔/✘
+        r[5],            # ✔/✘
+        r[6],            # Priority
+        wrap(r[7], 30),  # Notes
+    ]
+    for r in rows
+]
+
+# -----------------------------
+# 2) FIGURE 16:9
+# -----------------------------
+fig, ax = plt.subplots(figsize=(16, 9))
+ax.axis("off")
+
+fig.patch.set_facecolor("white")
+ax.set_facecolor("white")
+
+# Column widths (8 columns now)
+col_widths = [0.18, 0.22, 0.10, 0.08, 0.10, 0.08, 0.08, 0.16]
+
+table = ax.table(
+    cellText=wrapped_rows,
+    colLabels=columns,
+    colLoc="center",
+    cellLoc="left",
+    colWidths=col_widths,
+    loc="center",
+)
+
+table.auto_set_font_size(False)
+table.set_fontsize(10)
+table.scale(1, 2)  # <-- height control
+
+# -----------------------------
+# 3) STYLING (LIGHT THEME)
+# -----------------------------
+HEADER_BG = "#F2F2F2"
+ROW_BG_1  = "#FFFFFF"
+ROW_BG_2  = "#FAFAFA"
+GRID_COL  = "#000000"
+TXT_COL   = "#222222"
+
+GREEN     = "#2E7D32"   # ✔
+RED       = "#C62828"   # ✘
+P1_COL    = "#5E548E"
+P2_COL    = "#4A6FA5"
+LATER_COL = "#9E9E9E"
+
+for (row, col), cell in table.get_celld().items():
+    cell.set_edgecolor(GRID_COL)
+    cell.set_linewidth(0.8)
+
+    if row == 0:
+        cell.set_facecolor(HEADER_BG)
+        cell.get_text().set_color("black")
+        cell.get_text().set_fontweight("bold")
+        cell.get_text().set_ha("center")
+        cell.get_text().set_va("center")
+    else:
+        cell.set_facecolor(ROW_BG_1 if row % 2 else ROW_BG_2)
+        cell.get_text().set_color(TXT_COL)
+        cell.get_text().set_va("center")
+
+        # ✔ / ✘ columns (now 2..5)
+        if col in [2, 3, 4, 5]:
+            cell.get_text().set_ha("center")
+            val = cell.get_text().get_text()
+            if val == "✔":
+                cell.get_text().set_color(GREEN)
+                cell.get_text().set_fontweight("bold")
+            elif val == "✘":
+                cell.get_text().set_color(RED)
+                cell.get_text().set_fontweight("bold")
+
+        # Priority column (index 6)
+        if col == 6:
+            cell.get_text().set_ha("center")
+            v = cell.get_text().get_text()
+            if v == "P1":
+                cell.get_text().set_color(P1_COL)
+                cell.get_text().set_fontweight("bold")
+            elif v == "P2":
+                cell.get_text().set_color(P2_COL)
+                cell.get_text().set_fontweight("bold")
+            elif v.lower() == "later":
+                cell.get_text().set_color(LATER_COL)
+                cell.get_text().set_fontweight("bold")
+            elif "P1" in v and "P2" in v:
+                # handles "P1–P2"
+                cell.get_text().set_color(P1_COL)
+                cell.get_text().set_fontweight("bold")
+
+# -----------------------------
+# 4) TITLE & EXPORT
+# -----------------------------
+plt.suptitle(
+    "Listening History : Global KPI Matrix (Light)",
+    color="black",
+    fontweight="bold",
+    fontsize=16,
+    y=0.83,
+)
+
+plt.savefig(
+    "KPI_Table_History_16x9.png",
+    dpi=300,
+    bbox_inches="tight",
+    facecolor=fig.get_facecolor(),
+)
+
+plt.tight_layout(rect=[0.01, 0.02, 0.99, 0.93])
