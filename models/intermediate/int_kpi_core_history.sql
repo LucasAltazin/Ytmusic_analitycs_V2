@@ -36,6 +36,8 @@ select
     artist,
     title,
     spotify_track_id,
+    main_genre,
+    sub_genre,
 
     -- metrics
     duration_seconds,
